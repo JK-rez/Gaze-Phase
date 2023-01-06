@@ -37,6 +37,7 @@ bright_green = (0,255,0)
 block_color = (53,115,255)
 (width, height) = (920, 540)
 _ = pygame.init()
+pygame.key.set_repeat(100,100)
 gt = ['Macroscopic Stage', 'Microscopic Stage']
 options = ['Yes', 'No']
 macro = ['Incision, scalp and muscle retraction', 'Craniotomy', 'Dural opening', 'Dural closure', 'Bone replacement', 'Closure' ]
@@ -124,7 +125,7 @@ def GoingThroughFrames(file_names, camera = None, phase = None, annotation_loc =
         pygame.display.flip()
 
         # START RECORDING OF GAZE HERE 
-        camera.start_recording("Application/csv_files/" + file_save_loc[:-4] + '.csv')
+        camera.start_recording("csv_files/" + file_save_loc[:-4] + '.csv')
         while running:
             
             events = pygame.event.get()
