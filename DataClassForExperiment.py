@@ -5,7 +5,7 @@ from natsort import natsorted
 
 class PathLabel():
     
-    def __init__(self, path = "C:/Users/quare/Downloads/ViT"):
+    def __init__(self, path = "C:/Users/quare/Downloads/ViT/1_1"):
         self.path = path
         
         
@@ -24,3 +24,16 @@ class PathLabel():
                 frame_dict= [{"image": image_path, "label" : labels} for image_path, labels in zip(frame, values)] 
                 data_dicts.append({'video': str(i), 'data' : frame_dict})
         return data_dicts
+
+  
+class Frames_video_folder():
+    def __init__(self, path = "C:/Users/quare/Downloads/ViT/1_1"):
+        self.path = path
+        self.frame_paths = [ self.path + '/' + idx for idx in os.listdir( self.path )]
+        self.frame_paths = natsorted(self.frame_paths)
+        
+    def __len__(self):
+        return len(self.frame_paths)
+    
+    def __getitem__(self, idx):
+        return self.frame_paths[idx]
