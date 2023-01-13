@@ -3,7 +3,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 # pathlabel = PathLabel()
 # data_dicts = pathlabel()
-
+#Specific data class for image label
 class ImgLabelDataClass():
     def __init__(self, path, clip_size = 1):
         ini = PathLabel(path)
