@@ -27,7 +27,8 @@ import threading
 from DataClassForExperiment import Frames_video_folder
 
 # Initialize pygame
-# path = input("enter path to data: ")
+
+
 # print(path)
 path = 'C:/Users/quare/Downloads/ViT/'
 black = (0,0,0)
