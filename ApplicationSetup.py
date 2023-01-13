@@ -64,7 +64,7 @@ barPos      = (screen_width/2-300, screen_height/2 + 500)
 barSize     = (600, 20)
 borderColor = white
 barColor    = red
-
+#creates progress bar
 def DrawBar(pos, size, borderC, barC, progress):
     pygame.draw.rect(screen, borderC, (*pos, *size), 1)
     innerPos  = (pos[0]+3, pos[1]+3)
