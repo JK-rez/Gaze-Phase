@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 # data_dicts = pathlabel()
 #Specific data class for image label
 class ImgLabelDataClass():
-    def __init__(self, path, clip_size = 1):
+    def __init__(self, path, clip_size = 16):
         ini = PathLabel(path)
         self.data_dicts = ini()
         self.clip_size = clip_size
