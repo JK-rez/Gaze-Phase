@@ -28,6 +28,10 @@ class TobiiEyeTracker:
         
         self._numGazePoints = 0
         
+        self.file_name = "csv_datapoints.csv"
+        
+        self.file = None
+        
     def eyetracker_initialisation(self):
     
         try:
@@ -99,27 +103,52 @@ class TobiiEyeTracker:
         except OSError:
             pass
         
+    # def gaze_data_callback(self, gaze_data):
+    # # Print gaze points of left and right eye
+    #     self.gaze_data = gaze_data
+    #     if self.recording is True:
+    #         if not self.gaze_data_keys:
+    #             self.gaze_data_keys = gaze_data.keys()
+    #             if self.gaze_data_keys and not os.path.exists(self.data_file_storage):
+    #                 print("Recording")
+    #                 with open(self.data_file_storage, 'w') as f:
+    #                     w = csv.writer(f)
+    #                     w.writerow(gaze_data.keys())
+    #         if self.gaze_data_keys:
+    #             with open(self.data_file_storage, 'a') as f:
+    #                 w = csv.writer(f)
+    #                 w.writerow(gaze_data.values())
+        
+    #             # print("Left eye: ({gaze_left_eye}) \t Right eye: ({gaze_right_eye})".format(
+    #             # gaze_left_eye=gaze_data['left_gaze_point_on_display_area'],
+    #             # gaze_right_eye=gaze_data['right_gaze_point_on_display_area']))
+    
     def gaze_data_callback(self, gaze_data):
     # Print gaze points of left and right eye
         self.gaze_data = gaze_data
         if self.recording is True:
+             
             if not self.gaze_data_keys:
-                self.gaze_data_keys = gaze_data.keys()
-                if self.gaze_data_keys and not os.path.exists(self.data_file_storage):
+                self.gaze_data_keys = gaze_data.keys()    
+                if not os.path.exists(self.file_name):
                     print("Recording")
-                    with open(self.data_file_storage, 'w') as f:
-                        w = csv.writer(f)
-                        w.writerow(gaze_data.keys())
-            if self.gaze_data_keys:
-                with open(self.data_file_storage, 'a') as f:
-                    w = csv.writer(f)
-                    w.writerow(gaze_data.values())
+                    print(self.file_name)
+                    with open(self.file_name, 'w') as f:
+                        smth = csv.writer(f)
+                        smth.writerow(['frames',gaze_data.keys()])
+                        
+            if self.gaze_data_keys and not self.file:
+                self.file = open(self.file_name, 'a')
+                print(self.file)
         
-                # print("Left eye: ({gaze_left_eye}) \t Right eye: ({gaze_right_eye})".format(
-                # gaze_left_eye=gaze_data['left_gaze_point_on_display_area'],
-                # gaze_right_eye=gaze_data['right_gaze_point_on_display_area']))
-            
-    
+            if gaze_data and self.file:
+                # smth = csv.writer(self.file)
+                smth = csv.writer(self.file)
+                smth.writerow([('frame'+ str(self.data_file_storage)), gaze_data.values()])
+                # with open(self.file_name, 'a') as f:
+                #         self.file = csv.writer(f)
+                        # self.file.writerow(gaze_data.values())  
+
     def start_datastream(self):
         # check to see if eyetracker is there
         if self.eyetracker is None:
@@ -138,22 +167,23 @@ class TobiiEyeTracker:
         print('Stoped data stream') 
                 
         
-    def start_recording(self, file_name):
-        if self.recording:
-            raise ValueError("Recording already on")
+    def start_recording(self, data_file_storage, file_name):
+        # if self.recording:
+        #     raise ValueError("Recording already on")
         if self.eyetracker is None:
             raise ValueError("There is no eyetracker.")
         if not isinstance(file_name, str):
             raise TypeError('File Name to save data is not valid')
         if not file_name.endswith('.csv'):
             raise TypeError('File Name to save data is not valid')
-        self.data_file_storage = file_name
+        self.data_file_storage = data_file_storage
+        self.file_name = file_name
         self.recording = True
                         
         
     def stop_recording(self):
         self.recording = False
-        self.gaze_data_keys =  None
+        # self.gaze_data_keys =  None
     
     def update(self):
         if self.eyetracker is None:
