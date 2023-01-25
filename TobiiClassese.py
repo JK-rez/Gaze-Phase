@@ -135,7 +135,9 @@ class TobiiEyeTracker:
                     print(self.file_name)
                     with open(self.file_name, 'w') as f:
                         smth = csv.writer(f)
-                        smth.writerow(['frames',gaze_data.keys()])
+                        array = list(gaze_data.keys())
+                        array.append('frames')
+                        smth.writerow(array)
                         
             if self.gaze_data_keys and not self.file:
                 self.file = open(self.file_name, 'a')
@@ -144,7 +146,10 @@ class TobiiEyeTracker:
             if gaze_data and self.file:
                 # smth = csv.writer(self.file)
                 smth = csv.writer(self.file)
-                smth.writerow([('frame'+ str(self.data_file_storage)), gaze_data.values()])
+                array = list(gaze_data.values())
+                array.append('frame'+ str(self.data_file_storage))
+                smth.writerow(array)
+                # smth.writerow([('frame'+ str(self.data_file_storage)), list(gaze_data.values())])
                 # with open(self.file_name, 'a') as f:
                 #         self.file = csv.writer(f)
                         # self.file.writerow(gaze_data.values())  
@@ -258,7 +263,7 @@ class RecordingThread:
 # camera.getTrackerSpace()
 # camera.eyetracker.subscribe_to(tr.EYETRACKER_GAZE_DATA, gaze_data_callback, as_dictionary = True)
 
-# # vs = RecordingThread(camera.eyetracker).start()
+# vs = RecordingThread(camera.eyetracker).start()
 # time.sleep(2)
 # print(camera.eyetracker)
 # print('done')
