@@ -52,7 +52,7 @@ screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 print(screen.get_size())
 window = screen.get_rect()
 pygame.display.flip()
-speed = 100
+speed = 150
 pygame.key.set_repeat(speed,speed)
 #Where my data is 
 # data_src = "C:/Users/quare/Downloads/ViT/1_1/"
@@ -207,8 +207,12 @@ def GoingThroughFrames(file_names, camera = None, speed = 60, phase = None, anno
                         pygame.quit()
                         quit()
                     elif event.key == K_UP:
+                        time.sleep(0.1)
+                        pygame.event.clear()
                         return 0, 1
                     elif event.key == K_DOWN:
+                        time.sleep(0.1)
+                        pygame.event.clear()
                         return 0, -1
                     elif event.key == K_RIGHT:
                         # idx += 1
@@ -387,7 +391,7 @@ def main():
     global length
     length = video_class.get_num_frames()
     print(length, 'frames')
-    speed = 100
+    speed = 150
     session = True
     i = 0
     label = []
@@ -442,6 +446,11 @@ def main():
             times = array[hook]    
         if 0 <= i + next*times < length:     
             i += next*times
+            if times == 0:
+                speed = 200
+            else:
+                speed = 150
+        
     
     
             
