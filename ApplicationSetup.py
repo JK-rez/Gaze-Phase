@@ -8,6 +8,7 @@ from natsort import natsorted
 import pygame, time
 import pathlib
 import pandas as pd
+import numpy as np
 from pygame.locals import (
     K_UP,
     K_DOWN,
@@ -27,11 +28,10 @@ from DataClass import ImgLabelDataClass
 from TobiiClassese import TobiiEyeTracker
 import threading
 from DataClassForExperiment import Frames_video_folder, VideoFileDataset
-
+import time 
 # Initialize pygame
 
 
-# print(path)
 path = 'C:/Users/quare/Downloads/ViT/'
 black = (0,0,0)
 white = (255,255,255)
@@ -40,6 +40,8 @@ green = (0,200,0)
 bright_red = (255,0,0)
 bright_green = (0,255,0)
 block_color = (53,115,255)
+blue = (0,0,200)
+bright_blue = (0,0,255)
 (width, height) = (920, 540)
 _ = pygame.init()
 
@@ -52,7 +54,7 @@ screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 print(screen.get_size())
 window = screen.get_rect()
 pygame.display.flip()
-speed = 150
+speed = 200
 pygame.key.set_repeat(speed,speed)
 #Where my data is 
 # data_src = "C:/Users/quare/Downloads/ViT/1_1/"
@@ -117,6 +119,8 @@ def button(msg,x,y,w,h,ic,ac, action=None):
                     return 2
                 elif msg != action:
                     return 3
+            else:
+                action()
             return False
         elif click[0] == 1 and action == None:
             return msg
@@ -263,6 +267,7 @@ def label_recording(label, file_name, frame, pygame_image):
         screen.blit(TextSurf, TextRect)
         yes = button('Yes', (screen_width/2)-250, 160, 200, 50, green, bright_green, 'Yes')
         no = button('No', (screen_width/2)+50, 160, 200, 50, red, bright_red, 'Yes')
+        annot = button('Modify Annotation', (screen_width/2)-100, 260, 200, 50, blue, bright_blue, 'Yes')
         # increased = button('Increase frame skip', (screen_width/2)-250, 260, 200, 50, green, bright_green, 'Increase frame skip')
         # decreased = button('Decrease frame skip', (screen_width/2)+50, 260, 200, 50, red, bright_red, 'Increase frame skip')
         if yes == 2:
@@ -271,6 +276,10 @@ def label_recording(label, file_name, frame, pygame_image):
         elif no == 3:
             annotation = False
             return 3  
+        elif annot == 3:
+            label_sum_and_update(file_name)
+            annotation = False
+            return 3
         # elif increased == 2:
         #     return 4
         # elif decreased == 3:
@@ -334,9 +343,10 @@ def Label_Selection(labels, frames, file_name):
         else:
             value = whileloops(value,message = None, coord = [0,0])
             if isinstance(value, str):
+                time_stamp = datetime.datetime.now().strftime("%m-%d %H:%M:%S")
                 with open(file_name, 'a') as f:
                     w = csv.writer(f)
-                    w.writerow([frames, value])
+                    w.writerow([frames, value, time_stamp])
                 annotation = False
                 return 2
         
@@ -372,14 +382,72 @@ def Experiment_intro(array):
         value = whileloops(array, coord = [0,0])
         if isinstance(value, str):
             return 'videos/' + value
+
+
+def write(message, size, position, color = black):
+    largeText = pygame.font.Font('freesansbold.ttf',size)
+    TextSurf, TextRect = text_objects(message, largeText, color)
+    TextRect.topleft = (position[0],position[1])
+    screen.blit(TextSurf, TextRect)
+
+def label_sum_and_update(file_name):
+    choosing = True
+    dat_file = pd.read_csv(file_name)
+    frame_num = dat_file['frames'].values
+    label_name = dat_file['label'].values
+    time_stamp = dat_file['time'].values
+    while choosing:
+        for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+                elif event.type == KEYDOWN:
+                    if event.key == K_ESCAPE:
+                        pygame.quit()
+                        quit()
+                        
+        screen.fill(white)
+        
+        largeText = pygame.font.Font('freesansbold.ttf',60)
+        TextSurf, TextRect = text_objects("Annotated Phases", largeText)
+        TextRect.center = ((screen_width/2),(screen_height/2)-200)
+        screen.blit(TextSurf, TextRect)
+            
+        write("Frame Number", 20, [(screen_width/2) - 300 ,(screen_height/2) - 150])
+        write("Label", 20, [(screen_width/2) - 100 ,(screen_height/2) - 150])
+        write("Time", 20, [(screen_width/2) + 200 ,(screen_height/2) - 150])
+        pygame.draw.line(screen, black, ((screen_width/2) - 300 ,(screen_height/2) - 120), ((screen_width/2) + 400 ,(screen_height/2) - 120), 1)
+        
+        for i, frame in enumerate(frame_num):
+            write(frame, 20, [(screen_width/2) - 300 ,(screen_height/2) - 100 + i*30])
+            write(label_name[i], 20, [(screen_width/2) - 100 ,(screen_height/2) - 100 + i*30])
+            write(time_stamp[i], 20, [(screen_width/2) + 200,(screen_height/2) - 100 + i*30])
+            pygame.draw.line(screen, black, ((screen_width/2) - 300 ,(screen_height/2) - 80 + i *30), ((screen_width/2) + 650 ,(screen_height/2) - 80 + i*30), 1)
+            delete = button("Delete", (screen_width/2) + 650, (screen_height/2) - 110 + i*30, 100, 30, red, bright_red, something)
+            if delete == False:
+                frame_num = np.delete(frame_num,i)
+                label_name = np.delete(label_name,i)
+                time_stamp = np.delete(time_stamp,i)
+                time.sleep(1)
+                
+                with open(file_name, 'w') as f:
+                    w = csv.writer(f)
+                    w.writerow(dat_file.keys())
+                    for i, frame in enumerate(frame_num):
+                        w.writerow([frame, label_name[i], time_stamp[i]])
+                
+                break
+
+        choosing = button("Continue", (screen_width/2), (screen_height/2) + 100, 100, 50, green, bright_green, something)
+        pygame.display.update()
+
 def main():
     # data_class = Frames_video_folder(path = "C:/Users/quare/Downloads/ViT/video/frames_linux")
     # length = data_class.__len__()
     fps = 30
     # array = [1,10,20,50]
-    array = [0,1,5,10,30,60,120,300]
-    array = [int(x*fps + 1) for x in array]
-    # print(array)
+    fps_array = [0,1,5,10,30,60,120,300]
+    fps_array = [int(x*fps + 1) for x in fps_array]
     hook = 0
     camera = TobiiEyeTracker()
     camera.eyetracker_initialisation()
@@ -396,9 +464,10 @@ def main():
     i = 0
     label = []
     frames = []
+    tm = []
     file_name = 'annotation/video' + path[7:-4] + '_data.csv'
     if not os.path.exists(file_name):
-        data = { 'frames': frames, 'label': label}
+        data = { 'frames': frames, 'label': label, 'time' : tm}
         with open(file_name, 'w') as f:
                 w = csv.writer(f)
                 w.writerow(data.keys())
@@ -408,6 +477,7 @@ def main():
         if len(df['frames'].values) > 0:
             starting_frame = df['frames'].values[-1]
             i = int(starting_frame[5:])
+            label_sum_and_update(file_name)
     times = 1      
     hook = 0  
     while session:
@@ -439,18 +509,18 @@ def main():
                     break
                 pygame.display.update()
         else:
-            if  idx == 1 and hook < len(array)-1:
+            if  idx == 1 and hook < len(fps_array)-1:
                 hook += idx
             elif idx == -1 and hook > 0:
                 hook += idx
-            times = array[hook]    
-        if 0 <= i + next*times < length:     
-            i += next*times
+            times = fps_array[hook]    
+        if 0 <= i + next*times  < length:     
+            i += next*times 
             if times == 0:
                 speed = 200
             else:
-                speed = 150
-        
+                speed = 100
+        pygame.key.set_repeat(speed,speed)
     
     
             
